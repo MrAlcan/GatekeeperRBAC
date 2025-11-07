@@ -1,0 +1,14 @@
+.env
+
+bun.lock
+package-lock.json
+pnpm-lock.yaml
+tsconfig.vitest-temp.json
+
+dist/
+coverage/
+node_modules/
+
+postgres-db/
+
+.prod.env

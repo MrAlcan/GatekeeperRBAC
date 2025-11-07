@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "esNext",
+    "module": "esNext",
+    "moduleResolution": "bundler",
+    "rootDir": ".",
+    "outDir": "dist",
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [ "src/*" ]
+    },
+    "types": [ "node", "express" ],
+    "typeRoots": [ "./src/types", "./node_modules/@types" ],
+    "verbatimModuleSyntax": true
+  },
+  "include": [ "src", "tests" ],
+  "exclude": [ "node_modules", "dist" ]
+}

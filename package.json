@@ -1,0 +1,39 @@
+{
+  "name": "beymax-back",
+  "version": "1.0.0",
+  "author": "Pxndxs 🐼",
+  "private": true,
+  "type": "module",
+  "main": "./dist/app.js",
+  "scripts": {
+    "start:prod": "node .",
+    "start:dev": "bun --watch ./src/app.ts",
+    "build": "rolldown -c rolldown.config.mts",
+    "lint": "eslint --ext .ts src/",
+    "lint:fix": "eslint --fix --ext .ts src/"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.2",
+    "@types/nodemailer": "^7.0.1",
+    "@types/pg": "^8.15.5",
+    "@types/qrcode": "^1.5.5",
+    "eslint": "^9.25.1",
+    "pino-pretty": "^13.1.1",
+    "rolldown": "^1.0.0-beta.8",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.31.0"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "nodemailer": "^7.0.6",
+    "pdf-lib": "^1.17.1",
+    "pg": "^8.16.3",
+    "pino": "^10.0.0",
+    "pino-http": "^11.0.0",
+    "qrcode": "^1.5.4"
+  }
+}
