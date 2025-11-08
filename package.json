@@ -1,7 +1,7 @@
 {
-  "name": "beymax-back",
+  "name": "GatekeeperRBAC",
   "version": "1.0.0",
-  "author": "Pxndxs 🐼",
+  "author": "MrAlcan",
   "private": true,
   "type": "module",
   "main": "./dist/app.js",
