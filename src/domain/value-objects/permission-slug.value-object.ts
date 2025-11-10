@@ -9,10 +9,10 @@ export class PermissionSlugVO {
 
   public static create( permissionSlug: string ): PermissionSlugVO {
     if ( !this.isValid( permissionSlug ) ) {
-      throw CustomError.badRequest( 'Invalid permission slug format', [{
+      throw CustomError.badRequest( 'permissionSlug.invalid', [{
         field: 'permissionSlug',
-        code: 'invalid_permission_slug_format',
-        messageKey: 'invalid_permission_slug_format',
+        code: 'permissionSlug.invalid',
+        messageKey: 'El slug de la permission debe ser un slug valido',
       }] )
     }
     return new PermissionSlugVO( permissionSlug )

@@ -1,9 +1,10 @@
 import { CustomError } from '@/domain/errors'
+import { EntityIdVO } from '@/domain/value-objects'
 
 export class AssignPermissionToRoleDto {
   private constructor (
-    public readonly roleId: string,
-    public readonly permissionId: string,
+    public readonly roleId: EntityIdVO,
+    public readonly permissionId: EntityIdVO,
   ) {}
 
   static create ( object: Record<string, any> ): AssignPermissionToRoleDto {
@@ -17,8 +18,8 @@ export class AssignPermissionToRoleDto {
     if ( !permissionId ) {
       throw CustomError.badRequest( 'errors.assignPermissionToRole.permissionId.required' )
     }
-    const roleIdStr = roleId.trim()
-    const permissionIdStr = permissionId.trim()
-    return new AssignPermissionToRoleDto( roleIdStr, permissionIdStr )
+    const roleIdVO = EntityIdVO.create( roleId )
+    const permissionIdVO = EntityIdVO.create( permissionId )
+    return new AssignPermissionToRoleDto( roleIdVO, permissionIdVO )
   }
 }

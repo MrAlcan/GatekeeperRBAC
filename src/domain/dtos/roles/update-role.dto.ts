@@ -1,8 +1,9 @@
 import { CustomError } from '@/domain/errors'
+import { EntityIdVO } from '@/domain/value-objects'
 
 export class UpdateRoleDto {
   private constructor (
-    public readonly id: string,
+    public readonly id: EntityIdVO,
     public readonly name?: string,
     public readonly description?: string,
   ) {}
@@ -27,9 +28,9 @@ export class UpdateRoleDto {
         throw CustomError.badRequest( 'errors.updateRole.description.invalid' )
       }
     }
-    const idStr = id.trim()
+    const idVO = EntityIdVO.create( id )
     const nameStr = name?.trim()
     const descriptionStr = description?.trim()
-    return new UpdateRoleDto( idStr, nameStr, descriptionStr )
+    return new UpdateRoleDto( idVO, nameStr, descriptionStr )
   }
 }

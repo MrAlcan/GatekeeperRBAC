@@ -15,22 +15,38 @@ export class CreateUserDto {
       throw CustomError.badRequest( 'errors.createUser.requestBody.required' )
     }
     const { name, lastName, email, password, roleNames } = object
-    if ( !name ) {
+    if ( !name )
       throw CustomError.badRequest( 'errors.createUser.name.required' )
-    }
-    if ( !lastName ) {
+
+    if ( name && typeof name !== 'string' )
+      throw CustomError.badRequest( 'errors.createUser.name.string' )
+
+    if ( !lastName )
       throw CustomError.badRequest( 'errors.createUser.lastName.required' )
-    }
-    if ( !email ) {
+
+    if ( lastName && typeof lastName !== 'string' )
+      throw CustomError.badRequest( 'errors.createUser.lastName.string' )
+
+    if ( !email )
       throw CustomError.badRequest( 'errors.createUser.email.required' )
-    }
-    if ( !password ) {
+
+    if ( email && typeof email !== 'string' )
+      throw CustomError.badRequest( 'errors.createUser.email.string' )
+
+    if ( !password )
       throw CustomError.badRequest( 'errors.createUser.password.required' )
-    }
-    const nameStr = name.trim()
-    const lastNameStr = lastName.trim()
-    const emailStr = email.trim()
-    const passwordStr = password.trim()
-    return new CreateUserDto( nameStr, lastNameStr, emailStr, passwordStr, roleNames )
+
+    if ( password && typeof password !== 'string' )
+      throw CustomError.badRequest( 'errors.createUser.password.string' )
+
+    if ( roleNames && !Array.isArray( roleNames ) )
+      throw CustomError.badRequest( 'errors.createUser.roleNames.array' )
+
+    const nameStr: string = name.trim()
+    const lastNameStr: string = lastName.trim()
+    const emailStr: string = email.trim()
+    const emailVO: EmailVO = EmailVO.create( emailStr )
+    const passwordStr: string = password.trim()
+    return new CreateUserDto( nameStr, lastNameStr, emailVO, passwordStr, roleNames )
   }
 }

@@ -1,8 +1,9 @@
 import { CustomError } from '@/domain/errors'
+import { EntityIdVO } from '@/domain/value-objects'
 
 export class DeleteUserDto {
   private constructor (
-    public readonly id: string,
+    public readonly id: EntityIdVO,
   ) {}
 
   static create ( object: Record<string, any> ): DeleteUserDto {
@@ -13,7 +14,7 @@ export class DeleteUserDto {
     if ( !id ) {
       throw CustomError.badRequest( 'errors.deleteUser.id.required' )
     }
-    const idStr = id.trim()
-    return new DeleteUserDto( idStr )
+    const idVO = EntityIdVO.create( id )
+    return new DeleteUserDto( idVO )
   }
 }

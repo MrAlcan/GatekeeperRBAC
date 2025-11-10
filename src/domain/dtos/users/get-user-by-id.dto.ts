@@ -1,8 +1,9 @@
 import { CustomError } from '@/domain/errors'
+import { EntityIdVO } from '@/domain/value-objects'
 
 export class GetUserByIdDto {
   private constructor (
-    public readonly id: string,
+    public readonly id: EntityIdVO,
   ) {}
 
   static create ( object: Record<string, any> ): GetUserByIdDto {
@@ -13,7 +14,7 @@ export class GetUserByIdDto {
     if ( !id ) {
       throw CustomError.badRequest( 'errors.getUserById.id.required' )
     }
-    const idStr = id.trim()
-    return new GetUserByIdDto( idStr )
+    const idVO = EntityIdVO.create( id )
+    return new GetUserByIdDto( idVO )
   }
 }

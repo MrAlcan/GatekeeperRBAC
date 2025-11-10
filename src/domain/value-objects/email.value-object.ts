@@ -9,10 +9,10 @@ export class EmailVO {
 
   public static create( email: string ): EmailVO {
     if ( !this.isValid( email ) ) {
-      throw CustomError.badRequest( 'Invalid email format', [{
+      throw CustomError.badRequest( 'email.invalid', [{
         field: 'email',
-        code: 'invalid_email_format',
-        messageKey: 'invalid_email_format',
+        code: 'email.invalid',
+        messageKey: 'El email debe ser un email valido',
       }] )
     }
     return new EmailVO( email )

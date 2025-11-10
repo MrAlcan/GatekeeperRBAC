@@ -1,8 +1,9 @@
 import { CustomError } from '@/domain/errors'
+import { EntityIdVO } from '@/domain/value-objects'
 
 export class UpdateUserDto {
   private constructor (
-    public readonly id: string,
+    public readonly id: EntityIdVO,
     public readonly name?: string,
     public readonly lastName?: string,
     public readonly isActive?: boolean,
@@ -35,9 +36,9 @@ export class UpdateUserDto {
       throw CustomError.badRequest( 'errors.updateUser.isActive.invalid' )
     }
 
-    const idStr = id.trim()
+    const idVO = EntityIdVO.create( id )
     const nameStr = name?.trim()
     const lastNameStr = lastName?.trim()
-    return new UpdateUserDto( idStr, nameStr, lastNameStr, isActive )
+    return new UpdateUserDto( idVO, nameStr, lastNameStr, isActive )
   }
 }
