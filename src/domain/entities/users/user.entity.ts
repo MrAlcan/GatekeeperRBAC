@@ -8,7 +8,6 @@ export class UserEntity {
     public name: string,
     public lastName: string,
     public email: EmailVO,
-    public password: string,
     public roles: RoleEntity[],
     public isActive: boolean,
   ) {}
