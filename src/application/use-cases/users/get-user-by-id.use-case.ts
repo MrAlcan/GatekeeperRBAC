@@ -1,22 +1,26 @@
-import type { GetUserByIdDto } from '@/domain/dtos'
-import type { UserEntity } from '@/domain/entities'
 import type { UsersRepository } from '@/domain/repositories'
-import { CustomError } from '@/domain/errors'
-
-export interface GetUserByIdResponseDto {
-  success: boolean
-  data: UserEntity
-}
+import type { GetUserByIdInput } from '@/domain/schemas'
+import type { GetUserByIdResponseDTO } from '@/application/dtos'
+import { EntityIdVO } from '@/domain/value-objects'
+import { NotFoundError } from '@/domain/errors'
+import { UserMapper } from '@/application/mappers'
 
 export class GetUserByIdUseCase {
-  constructor (
+  constructor(
     private readonly usersRepository: UsersRepository
   ) {}
-  async execute ( getUserByIdDto: GetUserByIdDto ): Promise<GetUserByIdResponseDto> {
-    const user = await this.usersRepository.getUserById( getUserByIdDto )
+
+  async execute( input: GetUserByIdInput ): Promise<GetUserByIdResponseDTO> {
+    const userIdVO = EntityIdVO.create( input.id )
+
+    const user = await this.usersRepository.findById( userIdVO )
     if ( !user ) {
-      throw CustomError.notFound( 'errors.getUserById.user.notFound' )
+      throw NotFoundError.user( input.id )
     }
-    return { success: true, data: user }
+
+    return {
+      success: true,
+      data: UserMapper.toDTO( user )
+    }
   }
 }

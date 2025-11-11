@@ -1,13 +1,32 @@
-export interface TokenPayload {
-  id: string
-  roles?: string[]
+export interface AccessTokenPayload {
+  userId: string
+  email: string
+  roles: string[]
 }
 
-/*export interface TokenGeneratorPort {
-  generateToken(payload: TokenPayload, duration?: string): Promise<string>
-}*/
+export interface RefreshTokenPayload {
+  userId: string
+  tokenId: string
+}
 
 export abstract class TokenGeneratorPort {
-  abstract generateToken( payload: TokenPayload, duration?: string ): Promise<string>
-  abstract validateToken<T>( token: string ): Promise<T | null>
+  abstract generateAccessToken(
+    payload: AccessTokenPayload,
+    expiresIn?: string
+  ): Promise<string>
+
+  abstract generateRefreshToken(
+    payload: RefreshTokenPayload,
+    expiresIn?: string
+  ): Promise<string>
+
+  abstract validateAccessToken(
+    token: string
+  ): Promise<AccessTokenPayload | null>
+
+  abstract validateRefreshToken(
+    token: string
+  ): Promise<RefreshTokenPayload | null>
+
+  abstract decodeToken<T = any>( token: string ): T | null
 }

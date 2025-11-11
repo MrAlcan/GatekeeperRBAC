@@ -1,24 +1,25 @@
-import type { PaginationDto } from '@/domain/dtos'
-import type { PaginationEntity, PermissionEntity } from '@/domain/entities'
 import type { PermissionsRepository } from '@/domain/repositories'
-import type { PaginatedResponseEntity } from '@/domain/entities'
-import { CustomError } from '@/domain/errors'
-
-export interface ListPermissionsResponseDto {
-  success: boolean
-  data: PermissionEntity[]
-  pagination: PaginationEntity
-}
+import type { PaginationParams } from '@/domain/repositories'
+import type { ListPermissionsResponseDTO } from '@/application/dtos'
+import { PermissionMapper, PaginationMapper } from '@/application/mappers'
 
 export class ListPermissionsUseCase {
-  constructor (
+  constructor(
     private readonly permissionsRepository: PermissionsRepository
   ) {}
-  async execute ( listPermissionsDto: PaginationDto ): Promise<ListPermissionsResponseDto> {
-    const permissions: PaginatedResponseEntity<PermissionEntity[]> = await this.permissionsRepository.listPermissions( listPermissionsDto )
-    if ( !permissions ) {
-      throw CustomError.notFound( 'errors.listPermissions.permissions.notFound' )
+
+  async execute(params: PaginationParams): Promise<ListPermissionsResponseDTO> {
+    const paginatedPermissions = await this.permissionsRepository.findMany(params)
+
+    const paginatedDTO = PaginationMapper.toPaginatedDTO(
+      paginatedPermissions,
+      PermissionMapper.toDTO
+    )
+
+    return {
+      success: true,
+      data: paginatedDTO.data,
+      pagination: paginatedDTO.pagination
     }
-    return { success: true, data: permissions.data, pagination: permissions.pagination }
   }
 }

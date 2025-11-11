@@ -1,24 +1,25 @@
-import type { PaginationDto } from '@/domain/dtos'
-import type { PaginationEntity, RoleEntity } from '@/domain/entities'
 import type { RolesRepository } from '@/domain/repositories'
-import type { PaginatedResponseEntity } from '@/domain/entities'
-import { CustomError } from '@/domain/errors'
-
-export interface ListRolesResponseDto {
-  success: boolean
-  data: RoleEntity[]
-  pagination: PaginationEntity
-}
+import type { PaginationParams } from '@/domain/repositories'
+import type { ListRolesResponseDTO } from '@/application/dtos'
+import { RoleMapper, PaginationMapper } from '@/application/mappers'
 
 export class ListRolesUseCase {
-  constructor (
+  constructor(
     private readonly rolesRepository: RolesRepository
   ) {}
-  async execute ( paginationDto: PaginationDto ): Promise<ListRolesResponseDto> {
-    const roles: PaginatedResponseEntity<RoleEntity[]> = await this.rolesRepository.listRoles( paginationDto )
-    if ( !roles ) {
-      throw CustomError.notFound( 'errors.listRoles.roles.notFound' )
+
+  async execute(params: PaginationParams): Promise<ListRolesResponseDTO> {
+    const paginatedRoles = await this.rolesRepository.findMany(params)
+
+    const paginatedDTO = PaginationMapper.toPaginatedDTO(
+      paginatedRoles,
+      RoleMapper.toDTO
+    )
+
+    return {
+      success: true,
+      data: paginatedDTO.data,
+      pagination: paginatedDTO.pagination
     }
-    return { success: true, data: roles.data, pagination: roles.pagination }
   }
 }

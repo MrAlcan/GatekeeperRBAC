@@ -1,24 +1,25 @@
-import type { PaginationDto } from "@/domain/dtos";
-import type { PaginationEntity, UserEntity } from "@/domain/entities";
-import type { UsersRepository } from "@/domain/repositories";
-import type { PaginatedResponseEntity } from "@/domain/entities";
-import { CustomError } from "@/domain/errors";
-
-export interface ListUsersResponseDto {
-  success: boolean
-  data: UserEntity[]
-  pagination: PaginationEntity
-}
+import type { UsersRepository } from '@/domain/repositories'
+import type { PaginationParams } from '@/domain/repositories'
+import type { ListUsersResponseDTO } from '@/application/dtos'
+import { UserMapper, PaginationMapper } from '@/application/mappers'
 
 export class ListUsersUseCase {
-  constructor (
+  constructor(
     private readonly usersRepository: UsersRepository
   ) {}
-  async execute ( paginationDto: PaginationDto ): Promise<ListUsersResponseDto> {
-    const users: PaginatedResponseEntity<UserEntity[]> = await this.usersRepository.listUsers( paginationDto )
-    if ( !users ) {
-      throw CustomError.notFound( 'errors.listUsers.users.notFound' )
+
+  async execute( params: PaginationParams ): Promise<ListUsersResponseDTO> {
+    const paginatedUsers = await this.usersRepository.findMany( params )
+
+    const paginatedDTO = PaginationMapper.toPaginatedDTO(
+      paginatedUsers,
+      UserMapper.toDTO
+    )
+
+    return {
+      success: true,
+      data: paginatedDTO.data,
+      pagination: paginatedDTO.pagination
     }
-    return { success: true, data: users.data, pagination: users.pagination }
   }
 }
