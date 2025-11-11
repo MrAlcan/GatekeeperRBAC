@@ -1,35 +1,79 @@
 import jwt from 'jsonwebtoken'
-import { TokenGeneratorPort, type TokenPayload } from '@/application/ports'
-import { CustomError } from '@/domain/errors'
-import { environments } from '../config/environments'
+import { TokenGeneratorPort, type AccessTokenPayload, type RefreshTokenPayload } from '@/application/ports'
+import { environments } from '../config'
 
 export class JwtGeneratorAdapter implements TokenGeneratorPort {
-  private readonly jwtSecret: string = environments.JWT_SECRET
-  private readonly jwtRefreshSecret: string = environments.JWT_REFRESH_SECRET
+  private readonly accessTokenSecret: string
+  private readonly refreshTokenSecret: string
+  private readonly accessTokenExpiration: string = '15m'
+  private readonly refreshTokenExpiration: string = '7d'
 
   constructor() {
-    if ( !this.jwtSecret ) {
-      throw CustomError.internalServer('JWT_SECRET is not defined')
+    this.accessTokenSecret = environments.JWT_SECRET
+    this.refreshTokenSecret = environments.JWT_REFRESH_SECRET
+
+    if (!this.accessTokenSecret || !this.refreshTokenSecret) {
+      throw new Error('JWT secrets are not configured')
     }
   }
 
-  async generateToken(payload: TokenPayload, duration: string = '1h'): Promise<string> {
-
-    const jwtOptions: jwt.SignOptions = { expiresIn: duration as jwt.SignOptions['expiresIn'] }
-    return new Promise( ( resolve, reject ) => {
-      jwt.sign( payload, this.jwtSecret, jwtOptions, ( err, token ) => {
-        if ( err ) return reject( err )
-        resolve( token! )
-      } )
-    } )
+  async generateAccessToken(
+    payload: AccessTokenPayload,
+    expiresIn?: string
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      jwt.sign(
+        payload,
+        this.accessTokenSecret,
+        { expiresIn: expiresIn || this.accessTokenExpiration },
+        (err, token) => {
+          if (err || !token) return reject(err)
+          resolve(token)
+        }
+      )
+    })
   }
 
-  async validateToken<T>( token: string ): Promise<T | null> {
-    return new Promise( ( resolve ) => {
-      jwt.verify( token, this.jwtSecret, ( err, decoded ) => {
-        if ( err ) return resolve( null )
-        resolve( decoded as T )
-      } )
-    } )
+  async generateRefreshToken(
+    payload: RefreshTokenPayload,
+    expiresIn?: string
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      jwt.sign(
+        payload,
+        this.refreshTokenSecret,
+        { expiresIn: expiresIn || this.refreshTokenExpiration },
+        (err, token) => {
+          if (err || !token) return reject(err)
+          resolve(token)
+        }
+      )
+    })
+  }
+
+  async validateAccessToken(token: string): Promise<AccessTokenPayload | null> {
+    return new Promise((resolve) => {
+      jwt.verify(token, this.accessTokenSecret, (err, decoded) => {
+        if (err || !decoded) return resolve(null)
+        resolve(decoded as AccessTokenPayload)
+      })
+    })
+  }
+
+  async validateRefreshToken(token: string): Promise<RefreshTokenPayload | null> {
+    return new Promise((resolve) => {
+      jwt.verify(token, this.refreshTokenSecret, (err, decoded) => {
+        if (err || !decoded) return resolve(null)
+        resolve(decoded as RefreshTokenPayload)
+      })
+    })
+  }
+
+  decodeToken<T = any>(token: string): T | null {
+    try {
+      return jwt.decode(token) as T
+    } catch {
+      return null
+    }
   }
 }

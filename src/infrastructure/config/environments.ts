@@ -11,6 +11,8 @@ interface Environments {
   EMAIL_HOST: string | undefined
   EMAIL_PORT: number | undefined
   EMAIL_FROM: string | undefined
+  EMAIL_USER: string | undefined
+  EMAIL_PASS: string | undefined
   NODE_ENV: string
   LOG_LEVEL: string
 }
@@ -27,6 +29,8 @@ export const environments: Environments = {
   EMAIL_HOST: process.env.EMAIL_HOST,
   EMAIL_PORT: Number( process.env.EMAIL_PORT ),
   EMAIL_FROM: process.env.EMAIL_FROM,
+  EMAIL_USER: process.env.EMAIL_USER,
+  EMAIL_PASS: process.env.EMAIL_PASS,
   NODE_ENV: process.env.MODE ?? 'development',
   LOG_LEVEL: process.env.LOG_LEVEL,
 }

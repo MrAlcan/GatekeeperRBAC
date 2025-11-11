@@ -1,40 +1,213 @@
-import type { UsersRepository } from "@/domain/repositories";
-import type { UsersDatasource } from "@/domain/datasources";
-import type { UserEntity } from "@/domain/entities";
-import type { CreateUserDto, UpdateUserDto, AssignRoleToUserDto, RemoveRoleFromUserDto, PaginationDto, GetUserByIdDto, DeleteUserDto } from "@/domain/dtos";
-import type { PaginatedResponseEntity } from "@/domain/entities";
+import { UsersRepository, type PaginationParams } from '@/domain/repositories'
+import { UserEntity, PaginatedResponseEntity } from '@/domain/entities'
+import { EntityIdVO, EmailVO } from '@/domain/value-objects'
+import { NotFoundError } from '@/domain/errors'
+import { prisma } from '../data/prisma'
+import { UserMapper, PaginationMapper } from '@/application/mappers'
 
 export class UsersRepositoryImpl implements UsersRepository {
-  constructor (
-    private readonly datasource: UsersDatasource,
-  ) {}
 
-  createUser ( dto: CreateUserDto ): Promise<UserEntity> {
-    return this.datasource.createUser( dto )
+  async create(
+    name: string,
+    lastName: string,
+    email: EmailVO,
+    hashedPassword: string
+  ): Promise<UserEntity> {
+    const userRaw = await prisma.user.create({
+      data: {
+        name,
+        lastName,
+        email: email.value,
+        password: hashedPassword,
+        isActive: true,
+        emailVerified: false
+      },
+      include: {
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    return UserMapper.toDomain(userRaw as any)
   }
 
-  updateUser ( updateUserDto: UpdateUserDto ): Promise<UserEntity> {
-    return this.datasource.updateUser( updateUserDto )
+  async update(
+    id: EntityIdVO,
+    data: {
+      name?: string
+      lastName?: string
+      isActive?: boolean
+    }
+  ): Promise<UserEntity> {
+    const userRaw = await prisma.user.update({
+      where: { id: id.value },
+      data: {
+        ...(data.name && { name: data.name }),
+        ...(data.lastName && { lastName: data.lastName }),
+        ...(data.isActive !== undefined && { isActive: data.isActive })
+      },
+      include: {
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    return UserMapper.toDomain(userRaw as any)
   }
 
-  listUsers ( listUsersDto: PaginationDto ): Promise<PaginatedResponseEntity<UserEntity[]>> {
-    return this.datasource.listUsers( listUsersDto )
+  async delete(id: EntityIdVO): Promise<void> {
+    await prisma.user.update({
+      where: { id: id.value },
+      data: {
+        isActive: false
+      }
+    })
   }
 
-  assignRoleToUser ( assignRoleToUserDto: AssignRoleToUserDto ): Promise<void> {
-    return this.datasource.assignRoleToUser( assignRoleToUserDto )
+  async findById(id: EntityIdVO): Promise<UserEntity | null> {
+    const userRaw = await prisma.user.findUnique({
+      where: { id: id.value },
+      include: {
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!userRaw) return null
+
+    return UserMapper.toDomain(userRaw as any)
   }
 
-  removeRoleFromUser ( removeRoleFromUserDto: RemoveRoleFromUserDto ): Promise<void> {
-    return this.datasource.removeRoleFromUser( removeRoleFromUserDto )
+  async findByEmail(email: EmailVO): Promise<UserEntity | null> {
+    const userRaw = await prisma.user.findUnique({
+      where: { email: email.value },
+      include: {
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!userRaw) return null
+
+    return UserMapper.toDomain(userRaw as any)
   }
 
-  deleteUser ( deleteUserDto: DeleteUserDto ): Promise<void> {
-    return this.datasource.deleteUser( deleteUserDto )
+  async findMany(params: PaginationParams): Promise<PaginatedResponseEntity<UserEntity[]>> {
+    const { page, pageSize, search, sort = 'createdAt', order = 'desc' } = params
+
+    const skip = (page - 1) * pageSize
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' as const } },
+            { lastName: { contains: search, mode: 'insensitive' as const } },
+            { email: { contains: search, mode: 'insensitive' as const } }
+          ]
+        }
+      : {}
+
+    const orderBy = { [sort]: order }
+
+    const [usersRaw, totalItems] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy,
+        include: {
+          roles: {
+            include: {
+              role: {
+                include: {
+                  permissions: {
+                    include: {
+                      permission: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }),
+      prisma.user.count({ where })
+    ])
+
+    const users = usersRaw.map((u: any) => UserMapper.toDomain(u))
+
+    const pagination = PaginationMapper.createEntity(page, pageSize, totalItems)
+
+    return new PaginatedResponseEntity(pagination, users)
   }
 
-  getUserById ( getUserByIdDto: GetUserByIdDto ): Promise<UserEntity> {
-    return this.datasource.getUserById( getUserByIdDto )
+  async assignRole(userId: EntityIdVO, roleId: EntityIdVO): Promise<void> {
+    await prisma.userRole.create({
+      data: {
+        userId: userId.value,
+        roleId: roleId.value
+      }
+    })
   }
 
+  async removeRole(userId: EntityIdVO, roleId: EntityIdVO): Promise<void> {
+    await prisma.userRole.delete({
+      where: {
+        userId_roleId: {
+          userId: userId.value,
+          roleId: roleId.value
+        }
+      }
+    })
+  }
+
+  async emailExists(email: EmailVO): Promise<boolean> {
+    const count = await prisma.user.count({
+      where: { email: email.value }
+    })
+    return count > 0
+  }
 }
