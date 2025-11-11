@@ -1,25 +1,78 @@
-import { CustomError } from '@/domain/errors/custom.error'
+import { ValidationError } from '../errors'
 
 export class PermissionSlugVO {
-  public readonly value: string
+  private readonly _value: string
+  private readonly _module: string
+  private readonly _action: string
 
-  private constructor( permissionSlug: string ) {
-    this.value = permissionSlug.toLowerCase().trim()
+  private constructor( slug: string ) {
+    this._value = slug.toLowerCase().trim()
+    const [ module, action ] = this._value.split( ':' )
+    this._module = module
+    this._action = action
   }
 
-  public static create( permissionSlug: string ): PermissionSlugVO {
-    if ( !this.isValid( permissionSlug ) ) {
-      throw CustomError.badRequest( 'permissionSlug.invalid', [{
-        field: 'permissionSlug',
-        code: 'permissionSlug.invalid',
-        messageKey: 'El slug de la permission debe ser un slug valido',
-      }] )
+  get value(): string {
+    return this._value
+  }
+
+  get module(): string {
+    return this._module
+  }
+
+  get action(): string {
+    return this._action
+  }
+
+  public static create( slug: string ): PermissionSlugVO {
+    if ( !slug ) {
+      throw ValidationError.singleField(
+        'slug',
+        'REQUIRED',
+        'Permission slug is required'
+      )
     }
-    return new PermissionSlugVO( permissionSlug )
+
+    const trimmed = slug.trim()
+
+    if ( !this.isValid( trimmed ) ) {
+      throw ValidationError.singleField(
+        'slug',
+        'INVALID_FORMAT',
+        'Permission slug must be in format "module:action" (lowercase, letters only)',
+        slug
+      )
+    }
+
+    return new PermissionSlugVO( trimmed )
   }
 
-  private static isValid( permissionSlug: string ): boolean {
-    const permissionSlugRegex = /^[a-z]+(?:-[a-z]+)*:[a-z]+$/
-    return permissionSlugRegex.test( permissionSlug )
-  } // se puede extender para ser mas exactos
+  public static fromParts( module: string, action: string ): PermissionSlugVO {
+    return this.create( `${ module }:${ action }` )
+  }
+
+  private static isValid( slug: string ): boolean {
+    const slugRegex = /^[a-z]+(?:-[a-z]+)*:[a-z]+(?:-[a-z]+)*$/
+    return slugRegex.test( slug )
+  }
+
+  public belongsToModule( module: string ): boolean {
+    return this._module === module.toLowerCase()
+  }
+
+  public hasAction( action: string ): boolean {
+    return this._action === action.toLowerCase()
+  }
+
+  public equals( other: PermissionSlugVO ): boolean {
+    return this._value === other._value
+  }
+
+  public toString(): string {
+    return this._value
+  }
+
+  public toJSON(): string {
+    return this._value
+  }
 }

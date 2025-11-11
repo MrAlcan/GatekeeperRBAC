@@ -3,9 +3,19 @@ import { PermissionSlugVO } from '@/domain/value-objects/permission-slug.value-o
 
 export class PermissionEntity {
   constructor (
-    public id: EntityIdVO,
-    public slug: PermissionSlugVO,
-    public name: string,
-    public description?: string,
+    public readonly id: EntityIdVO,
+    public readonly slug: PermissionSlugVO,
+    public readonly name: string,
+    public readonly description?: string,
+    public readonly createdAt?: Date,
+    public readonly updatedAt?: Date,
   ) {}
+
+  getModule(): string {
+    return this.slug.module
+  }
+
+  getAction(): string {
+    return this.slug.action
+  }
 }

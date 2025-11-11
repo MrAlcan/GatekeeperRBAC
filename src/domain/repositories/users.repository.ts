@@ -1,13 +1,34 @@
-import type { CreateUserDto, UpdateUserDto, AssignRoleToUserDto, RemoveRoleFromUserDto, GetUserByIdDto, DeleteUserDto, PaginationDto } from '@/domain/dtos'
-import type { UserEntity } from '../entities'
-import type { PaginatedResponseEntity } from '../entities'
+import { UserEntity, PaginatedResponseEntity } from '../entities'
+import { EntityIdVO, EmailVO } from '../value-objects'
+
+export interface PaginationParams {
+  page: number
+  pageSize: number
+  search?: string
+  sort?: string
+  order?: 'asc' | 'desc'
+}
 
 export abstract class UsersRepository {
-  abstract createUser ( createUserDto: CreateUserDto ): Promise<UserEntity>
-  abstract updateUser ( updateUserDto: UpdateUserDto ): Promise<UserEntity>
-  abstract deleteUser ( deleteUserDto: DeleteUserDto ): Promise<void>
-  abstract getUserById ( getUserByIdDto: GetUserByIdDto ): Promise<UserEntity>
-  abstract listUsers ( listUsersDto: PaginationDto ): Promise<PaginatedResponseEntity<UserEntity[]>>
-  abstract assignRoleToUser ( assignRoleToUserDto: AssignRoleToUserDto ): Promise<void>
-  abstract removeRoleFromUser ( removeRoleFromUserDto: RemoveRoleFromUserDto ): Promise<void>
+  abstract create(
+    name: string,
+    lastName: string,
+    email: EmailVO,
+    hashedPassword: string
+  ): Promise<UserEntity>
+  abstract update(
+    id: EntityIdVO,
+    data: {
+      name?: string
+      lastName?: string
+      isActive?: boolean
+    }
+  ): Promise<UserEntity>
+  abstract delete( id: EntityIdVO ): Promise<void>
+  abstract findById( id: EntityIdVO ): Promise<UserEntity | null>
+  abstract findByEmail( email: EmailVO ): Promise<UserEntity | null>
+  abstract findMany( params: PaginationParams ): Promise<PaginatedResponseEntity<UserEntity[]>>
+  abstract assignRole( userId: EntityIdVO, roleId: EntityIdVO ): Promise<void>
+  abstract removeRole( userId: EntityIdVO, roleId: EntityIdVO ): Promise<void>
+  abstract emailExists( email: EmailVO ): Promise<boolean>
 }

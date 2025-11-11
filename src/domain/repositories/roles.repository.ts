@@ -1,11 +1,26 @@
-import type { CreateRoleDto, UpdateRoleDto, AssignPermissionToRoleDto, RemovePermissionFromRoleDto, PaginationDto } from '@/domain/dtos'
-import type { RoleEntity } from '../entities'
-import type { PaginatedResponseEntity } from '../entities'
+import { RoleEntity, PaginatedResponseEntity } from '../entities'
+import { EntityIdVO } from '../value-objects'
+import type { PaginationParams } from './users.repository'
 
 export abstract class RolesRepository {
-  abstract createRole ( createRoleDto: CreateRoleDto ): Promise<RoleEntity>
-  abstract updateRole ( updateRoleDto: UpdateRoleDto ): Promise<RoleEntity>
-  abstract listRoles ( listRolesDto: PaginationDto ): Promise<PaginatedResponseEntity<RoleEntity[]>>
-  abstract assignPermissionToRole ( assignPermissionToRoleDto: AssignPermissionToRoleDto ): Promise<void>
-  abstract removePermissionFromRole ( removePermissionFromRoleDto: RemovePermissionFromRoleDto ): Promise<void>
+  abstract create(
+    name: string,
+    description?: string
+  ): Promise<RoleEntity>
+
+  abstract update(
+    id: EntityIdVO,
+    data: {
+      name?: string
+      description?: string
+    }
+  ): Promise<RoleEntity>
+  abstract delete( id: EntityIdVO ): Promise<void>
+  abstract findById( id: EntityIdVO ): Promise<RoleEntity | null>
+  abstract findByName( name: string ): Promise<RoleEntity | null>
+  abstract findMany( params: PaginationParams ): Promise<PaginatedResponseEntity<RoleEntity[]>>
+  abstract assignPermission( roleId: EntityIdVO, permissionId: EntityIdVO ): Promise<void>
+  abstract removePermission( roleId: EntityIdVO, permissionId: EntityIdVO ): Promise<void>
+  abstract hasUsers( roleId: EntityIdVO ): Promise<boolean>
+  abstract nameExists( name: string ): Promise<boolean>
 }
