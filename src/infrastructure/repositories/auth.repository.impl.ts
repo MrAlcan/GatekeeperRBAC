@@ -100,6 +100,11 @@ export class AuthRepositoryImpl implements AuthRepository {
   }
 
   async getUserPermissions(userId: EntityIdVO): Promise<string[]> {
+    console.log('=== getUserPermissions DEBUG ===')
+    console.log('userId object:', userId)
+    console.log('userId.value:', userId.value)
+    console.log('typeof userId.value:', typeof userId.value)
+
     const permissions = await prisma.$queryRaw<Array<{ permission_slug: string }>>`
       SELECT DISTINCT p.slug as permission_slug
       FROM users u
@@ -107,9 +112,13 @@ export class AuthRepositoryImpl implements AuthRepository {
       JOIN roles r ON ur.role_id = r.id
       JOIN role_permissions rp ON r.id = rp.role_id
       JOIN permissions p ON rp.permission_id = p.id
-      WHERE u.id = ${userId.value}::uuid
+      WHERE u.id = ${userId.value}
       AND u.is_active = true
     `
+
+    console.log('Query result:', permissions)
+    console.log('Permissions count:', permissions.length)
+    console.log('=== END DEBUG ===')
 
     return permissions.map((p: any) => p.permission_slug)
   }

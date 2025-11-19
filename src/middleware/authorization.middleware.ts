@@ -15,12 +15,17 @@ export const authorize = (...permissions: string[]) => {
         return next()
       }
       const authRepository = new AuthRepositoryImpl()
+      const userIdVO = EntityIdVO.create( req.user.userId )
+      console.log({ userIdVO })
+      //console.log({ req })
       const userPermissions = await authRepository.getUserPermissions(
-        EntityIdVO.create(req.user.userId)
+        userIdVO
       )
+      console.log({ userPermissions })
       const hasPermission = permissions.some(permission =>
         userPermissions.includes(permission)
       )
+      console.log({ hasPermission })
 
       if (!hasPermission) {
         throw AuthorizationError.insufficientPermissions(

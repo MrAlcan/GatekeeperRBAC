@@ -11,10 +11,19 @@ export const validate = (
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req[type]
+      console.log({ reqQuery: req['query'] })
+      console.log({ data })
+      console.log({ reqType: req[type] })
+      console.log({ type })
 
       const validated = await schema.parseAsync(data)
 
-      req[type] = validated
+      // Clear existing properties and assign validated ones
+      // This avoids the readonly property error with req.query
+      Object.keys(req[type] as object).forEach(key => {
+        delete (req[type] as Record<string, unknown>)[key]
+      })
+      Object.assign(req[type] as object, validated)
 
       next()
     } catch (error) {

@@ -9,7 +9,7 @@ export class AuthDatasourceImpl {
       JOIN roles r ON ur.role_id = r.id
       JOIN role_permissions rp ON r.id = rp.role_id
       JOIN permissions p ON rp.permission_id = p.id
-      WHERE u.id = ${userId}::uuid
+      WHERE u.id = '${userId}'
       AND u.is_active = true
     `
 
