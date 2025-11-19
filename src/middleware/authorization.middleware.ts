@@ -20,7 +20,8 @@ export const authorize = (...permissions: string[]) => {
         userIdVO
       )
       const hasPermission = permissions.some(permission =>
-        userPermissions.includes(permission)
+        userPermissions.includes(permission) ||
+        userPermissions.includes(`${permission.split(':')[0]}:manage`)
       )
 
       if (!hasPermission) {
@@ -54,7 +55,8 @@ export const requireAllPermissions = (...permissions: string[]) => {
       )
 
       const hasAllPermissions = permissions.every(permission =>
-        userPermissions.includes(permission)
+        userPermissions.includes(permission) ||
+        userPermissions.includes(`${permission.split(':')[0]}:manage`)
       )
 
       if (!hasAllPermissions) {
