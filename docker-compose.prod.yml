@@ -1,0 +1,53 @@
+
+services:
+  citizen-platform-db:
+    image: postgres
+    restart: always
+    container_name: ${POSTGRES_CONTAINER_NAME}
+    environment:
+      - POSTGRES_USER=${POSTGRES_DB_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASS}
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
+    ports:
+      - ${EXPOSED_POSTGRES_PORT}:5432
+    volumes:
+      - ${POSTGRES_DB_VOLUME}:/var/lib/postgresql/data:rw
+    networks:
+      - citizen-platform-network
+
+  citizen-platform-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      replicas: ${REPLICAS}
+    environment:
+      PORT: ${PORT}
+      HOST: ${HOST}
+      POSTGRES_URI: ${POSTGRES_URI}
+    restart: always
+    networks:
+      - citizen-platform-network
+    labels:
+      - "traefik.enable=false"
+    depends_on:
+      - citizen-platform-db
+
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - ${NGINX_PORT}:80
+      - ${NGINX_HTTPS_PORT}:443
+    depends_on:
+      - citizen-platform-web
+    networks:
+      - citizen-platform-network
+    volumes:
+      - ${NGINX_CONF_PATH}:/etc/nginx/nginx.conf
+      - ${NGINX_CERTIFICATE_PATH}:/etc/ssl/certificate.pem
+      - ${NGINX_KEY_PATH}:/etc/ssl/certificate_key.pem
+
+networks:
+  citizen-platform-network:
+    driver: bridge

@@ -1,0 +1,13 @@
+.DS_Store
+node_modules/
+Dockerfile*
+docker-compose*
+.dockerignore
+.git
+.gitignore
+README.md
+LICENSE
+.vscode
+coverage*
+dist/
+postgres-db/
