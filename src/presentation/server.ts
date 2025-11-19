@@ -12,6 +12,8 @@ import {
   errorHandler,
   notFoundHandler
 } from '../middleware'
+import { swaggerSpec } from './swagger'
+import swaggerUi from 'swagger-ui-express'
 
 interface ServerOptions {
   port: number
@@ -82,6 +84,27 @@ export class Server {
     this.app.use(contextMiddleware)
 
     this.app.set('trust proxy', 1)
+
+    this.app.use(
+      '/api-docs',
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec, {
+        explorer: true,
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'RBAC System API Docs',
+        swaggerOptions: {
+          persistAuthorization: true,
+          displayRequestDuration: true,
+          filter: true,
+          tryItOutEnabled: true
+        }
+      })
+    )
+
+    this.app.get('/api-docs.json', (req, res) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.send(swaggerSpec)
+    })
   }
 
   private configureRoutes(routes: Router): void {
